@@ -1,0 +1,614 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>La Aventura del Lenguaje · Repaso TEA</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;600;700;800&family=Nunito:wght@400;600;700;800&display=swap');
+
+  :root{
+    --bg: #14142b;
+    --bg2: #1c1c3a;
+    --card: #fff9f1;
+    --card-ink: #2a2440;
+    --ink: #f3f0ff;
+    --ink-dim: #b8b3d9;
+    --w1: #f4a340; /* Fundamentos */
+    --w2: #ff6b5c; /* Voz */
+    --w3: #34c9ad; /* Habla */
+    --w4: #9b7ede; /* Conducta */
+    --w5: #4ea8de; /* TEA */
+    --good: #3ecf8e;
+    --bad: #ff5c72;
+    --radius: 22px;
+  }
+
+  *{ box-sizing:border-box; }
+  html,body{ margin:0; padding:0; }
+  body{
+    background:
+      radial-gradient(circle at 15% 10%, rgba(255,255,255,0.06), transparent 40%),
+      radial-gradient(circle at 85% 25%, rgba(255,255,255,0.05), transparent 35%),
+      radial-gradient(circle at 50% 90%, rgba(255,255,255,0.04), transparent 45%),
+      linear-gradient(160deg, var(--bg), var(--bg2));
+    color: var(--ink);
+    font-family: 'Nunito', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+    position: relative;
+  }
+
+  .stars{
+    position: fixed; inset:0; pointer-events:none; z-index:0;
+  }
+  .star{
+    position:absolute; width:3px; height:3px; background:#fff; border-radius:50%;
+    opacity:0.5; animation: twinkle 3.5s ease-in-out infinite;
+  }
+  @keyframes twinkle{ 0%,100%{opacity:.15} 50%{opacity:.8} }
+
+  .app{
+    position:relative; z-index:1;
+    max-width: 640px;
+    margin: 0 auto;
+    padding: 28px 18px 60px;
+    min-height: 100vh;
+    display:flex; flex-direction:column;
+  }
+
+  h1,h2,h3{ font-family:'Baloo 2', sans-serif; margin:0; }
+
+  /* ---------- TOP BAR ---------- */
+  .topbar{
+    display:flex; align-items:center; gap:12px; margin-bottom:18px;
+    opacity:0; animation: fadeIn .5s ease forwards;
+  }
+  .world-chip{
+    font-family:'Baloo 2', sans-serif; font-weight:700; font-size:14px;
+    padding:7px 14px; border-radius:999px; color:#1a1730;
+    white-space:nowrap;
+  }
+  .progress-wrap{
+    flex:1; height:12px; background:rgba(255,255,255,0.1); border-radius:999px; overflow:hidden;
+    border:1px solid rgba(255,255,255,0.08);
+  }
+  .progress-bar{
+    height:100%; border-radius:999px; transition: width .5s cubic-bezier(.4,1.4,.4,1);
+    background: linear-gradient(90deg, var(--w1), var(--w5));
+  }
+  .streak{
+    font-family:'Baloo 2'; font-weight:700; font-size:14px; display:flex; align-items:center; gap:4px;
+    color:#ffd166; white-space:nowrap;
+  }
+
+  /* ---------- SCREENS ---------- */
+  .screen{ flex:1; display:flex; flex-direction:column; }
+  .center{ align-items:center; justify-content:center; text-align:center; }
+
+  /* ---- START SCREEN ---- */
+  .mascot{
+    width:130px; height:130px; margin: 6px auto 14px;
+  }
+  .waves{ display:flex; align-items:flex-end; gap:6px; height:64px; margin: 10px 0 26px; justify-content:center; }
+  .wave-bar{
+    width:9px; border-radius:6px;
+    background: linear-gradient(180deg, var(--w2), var(--w5));
+    animation: bounce 1.1s ease-in-out infinite;
+  }
+  @keyframes bounce{ 0%,100%{ transform:scaleY(.35);} 50%{ transform:scaleY(1);} }
+
+  .kicker{
+    font-family:'Baloo 2'; font-weight:700; letter-spacing:.08em; text-transform:uppercase;
+    font-size:13px; color:var(--w5); margin-bottom:10px;
+  }
+  h1.title{ font-size: 2.5rem; line-height:1.05; font-weight:800; margin-bottom:14px; }
+  h1.title span{ color: var(--w2); }
+  .subtitle{ color:var(--ink-dim); font-size:16px; max-width:440px; margin:0 auto 30px; line-height:1.5; }
+
+  .worldlist{
+    display:flex; flex-direction:column; gap:10px; width:100%; margin: 6px 0 32px;
+    text-align:left;
+  }
+  .worldrow{
+    display:flex; align-items:center; gap:12px;
+    background: rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.08);
+    padding:10px 14px; border-radius:14px;
+  }
+  .worlddot{ width:14px; height:14px; border-radius:50%; flex-shrink:0; }
+  .worldrow b{ font-family:'Baloo 2'; font-size:15px; }
+  .worldrow span{ color:var(--ink-dim); font-size:13px; display:block; }
+
+  button.big{
+    font-family:'Baloo 2'; font-weight:700; font-size:19px;
+    background: linear-gradient(135deg, var(--w2), #ff8f6b);
+    color:#241222; border:none; padding:17px 46px; border-radius:999px;
+    cursor:pointer; box-shadow: 0 8px 0 #c94636, 0 14px 24px rgba(255,107,92,.35);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  button.big:active{ transform: translateY(6px); box-shadow: 0 2px 0 #c94636, 0 6px 12px rgba(255,107,92,.3); }
+  .hint{ margin-top:16px; font-size:13px; color:var(--ink-dim); }
+
+  /* ---- WORLD INTRO ---- */
+  .world-badge{
+    width:96px; height:96px; border-radius:28px; display:flex; align-items:center; justify-content:center;
+    font-size:44px; margin:0 auto 20px; box-shadow: 0 12px 30px rgba(0,0,0,.35);
+    animation: pop .5s cubic-bezier(.4,1.6,.4,1);
+  }
+  @keyframes pop{ 0%{ transform:scale(.4) rotate(-10deg); opacity:0;} 100%{ transform:scale(1) rotate(0); opacity:1;} }
+  .world-num{ font-family:'Baloo 2'; font-weight:700; color:var(--ink-dim); font-size:14px; letter-spacing:.1em; text-transform:uppercase; }
+  .world-title{ font-size:2rem; margin: 6px 0 12px; }
+  .world-desc{ color:var(--ink-dim); max-width:420px; margin:0 auto 28px; line-height:1.5; }
+
+  /* ---- QUESTION CARD ---- */
+  .qcounter{ font-size:13px; color:var(--ink-dim); font-family:'Baloo 2'; font-weight:700; margin-bottom:8px; }
+  .qcard{
+    background: var(--card); color: var(--card-ink);
+    border-radius: var(--radius);
+    padding: 26px 22px;
+    box-shadow: 0 18px 40px rgba(0,0,0,.35);
+    animation: slideUp .4s cubic-bezier(.3,1,.4,1);
+  }
+  @keyframes slideUp{ from{ opacity:0; transform: translateY(18px);} to{opacity:1; transform:translateY(0);} }
+  .qtext{ font-family:'Baloo 2'; font-weight:700; font-size:1.28rem; line-height:1.35; margin-bottom:20px; }
+
+  .options{ display:flex; flex-direction:column; gap:11px; }
+  .opt{
+    display:flex; align-items:center; gap:12px;
+    text-align:left; width:100%; border:2px solid #e7dfd0; background:#fffdf9;
+    border-radius:16px; padding:13px 16px; font-family:'Nunito'; font-weight:700; font-size:15.5px;
+    color: var(--card-ink); cursor:pointer; transition: all .15s ease;
+  }
+  .opt:hover:not(.locked){ border-color: var(--w5); transform: translateX(3px); }
+  .opt .letter{
+    width:30px; height:30px; border-radius:50%; background:#f1ebdc; color:#7a715c;
+    display:flex; align-items:center; justify-content:center; font-family:'Baloo 2'; flex-shrink:0; font-size:14px;
+  }
+  .opt.correct{ background:#e6faf1; border-color: var(--good); }
+  .opt.correct .letter{ background: var(--good); color:#fff; }
+  .opt.wrong{ background:#ffeff1; border-color: var(--bad); }
+  .opt.wrong .letter{ background: var(--bad); color:#fff; }
+  .opt.locked{ cursor:default; }
+  .opt.dim{ opacity:.55; }
+
+  .feedback{
+    margin-top:18px; padding:15px 16px; border-radius:14px; font-size:14.5px; line-height:1.5;
+    animation: fadeIn .3s ease;
+  }
+  .feedback.good{ background:#e6faf1; color:#116945; border:1px solid #b6efd6; }
+  .feedback.bad{ background:#fff0f2; color:#8f1f38; border:1px solid #ffc9d2; }
+  .feedback b{ font-family:'Baloo 2'; }
+
+  .nextbtn{
+    margin-top:20px; width:100%; font-family:'Baloo 2'; font-weight:700; font-size:16px;
+    background: var(--card-ink); color:#fff; border:none; padding:14px; border-radius:14px;
+    cursor:pointer; opacity:0; animation: fadeIn .3s ease .1s forwards;
+  }
+  .nextbtn:hover{ opacity:.9 !important; }
+
+  @keyframes fadeIn{ from{opacity:0} to{opacity:1} }
+
+  /* ---- WORLD COMPLETE ---- */
+  .medal{ font-size:70px; margin-bottom:6px; animation: pop .5s cubic-bezier(.4,1.6,.4,1); }
+  .statgrid{ display:flex; gap:12px; margin: 22px 0 30px; justify-content:center; flex-wrap:wrap; }
+  .statbox{
+    background: rgba(255,255,255,0.06); border:1px solid rgba(255,255,255,0.1);
+    border-radius:16px; padding:16px 22px; min-width:110px;
+  }
+  .statbox .num{ font-family:'Baloo 2'; font-weight:800; font-size:1.6rem; }
+  .statbox .lab{ font-size:12px; color:var(--ink-dim); text-transform:uppercase; letter-spacing:.05em; }
+
+  /* ---- FINAL SCREEN ---- */
+  .trophy{ font-size:84px; }
+  .rank-badge{
+    font-family:'Baloo 2'; font-weight:700; padding:8px 20px; border-radius:999px; margin: 14px 0 6px;
+    display:inline-block; font-size:15px;
+  }
+  .worldbars{ width:100%; display:flex; flex-direction:column; gap:10px; margin: 22px 0 10px; text-align:left; }
+  .wbrow{ display:flex; align-items:center; gap:10px; }
+  .wbrow .wblabel{ width:150px; font-size:13px; font-family:'Baloo 2'; font-weight:700; flex-shrink:0; }
+  .wbtrack{ flex:1; height:10px; background:rgba(255,255,255,.1); border-radius:999px; overflow:hidden; }
+  .wbfill{ height:100%; border-radius:999px; }
+  .wbrow .wbnum{ width:44px; text-align:right; font-size:12px; color:var(--ink-dim); flex-shrink:0; }
+
+  .btnrow{ display:flex; gap:12px; margin-top:26px; flex-wrap:wrap; justify-content:center; }
+  button.secondary{
+    font-family:'Baloo 2'; font-weight:700; font-size:15px;
+    background: transparent; color: var(--ink); border:2px solid rgba(255,255,255,.25);
+    padding:13px 26px; border-radius:999px; cursor:pointer;
+  }
+  button.secondary:hover{ border-color: var(--ink); }
+
+  /* confetti */
+  .confetti-piece{
+    position:fixed; top:-10px; width:9px; height:14px; z-index:5; opacity:.9;
+    animation: fall linear forwards;
+  }
+  @keyframes fall{
+    to{ transform: translateY(110vh) rotate(540deg); opacity:.3; }
+  }
+
+  @media (max-width:480px){
+    h1.title{ font-size:2rem; }
+    .qtext{ font-size:1.12rem; }
+  }
+</style>
+</head>
+<body>
+<div class="stars" id="stars"></div>
+<div class="app" id="app"></div>
+
+<script>
+/* ============ CONTENIDO (íntegro, sin cambios) ============ */
+const QUESTIONS = [
+{q:"¿Qué estudia la psicopatología del lenguaje?", opts:["Solo la escritura","Dificultades, trastornos, retrasos o pérdidas relacionadas con la comunicación y el lenguaje","Únicamente la memoria","Solo los problemas de audición"], correct:1, exp:"Incluye alteraciones de la actividad comunicativa y del uso del lenguaje."},
+{q:"¿Cuál de los siguientes es un factor que influye en el desarrollo del lenguaje?", opts:["Solo la estatura","Los estímulos del medio","El color de ojos","La lateralidad manual"], correct:1, exp:"El material menciona estímulos, inteligencia y afectividad."},
+{q:"¿Cuál es una señal de alerta entre 12 y 24 meses?", opts:["Leer en voz alta","No comprender órdenes sencillas","Escribir su nombre","Pronunciar perfectamente la \"r\""], correct:1, exp:"La falta de comprensión de órdenes sencillas es una señal de alerta."},
+{q:"¿Qué es la disfonía?", opts:["Pérdida total de la audición","Alteración del tono o timbre de la voz","Dificultad para leer","Ausencia de emociones"], correct:1, exp:"La disfonía afecta la calidad de la voz."},
+{q:"¿Cómo se denomina la pérdida total de la voz?", opts:["Dislalia","Afonía","Mutismo electivo","Siseo"], correct:1, exp:"Afonía es la pérdida total de la voz."},
+{q:"¿Cuál puede ser una causa de disfonía infantil?", opts:["Inflamación","Tener ojos claros","Escribir mucho","Dormir con luz"], correct:0, exp:"El material menciona causas inflamatorias, infecciosas, congénitas, traumáticas, neurológicas y funcionales."},
+{q:"¿Qué hábito puede empeorar una alteración de la voz?", opts:["Hablar a un volumen adecuado","Gritar de manera frecuente","Beber agua","Descansar la voz"], correct:1, exp:"El uso intenso y forzado de la voz puede aumentar la tensión y favorecer lesiones."},
+{q:"¿Qué es la dislalia?", opts:["Alteración de la articulación de fonemas","Problema exclusivo de memoria","Trastorno del sueño","Pérdida total de la voz"], correct:0, exp:"La dislalia afecta la articulación de sonidos."},
+{q:"¿Qué ocurre en una sustitución?", opts:["Se añade un sonido","Se cambia un sonido por otro","Se deja de hablar totalmente","Se aumenta el volumen"], correct:1, exp:"La sustitución reemplaza un fonema por otro."},
+{q:"¿Qué ocurre en una omisión?", opts:["Se elimina un fonema","Se repite una palabra completa","Se sustituye una vocal por un gesto","Se cambia el tono de voz"], correct:0, exp:"Omisión significa que el fonema no se pronuncia."},
+{q:"¿Qué caracteriza a la dislalia evolutiva?", opts:["Siempre se debe a una lesión orgánica","Puede formar parte del desarrollo del niño","Aparece solo en adultos","Impide cualquier comunicación"], correct:1, exp:"Se considera propia de etapas del desarrollo."},
+{q:"¿Qué caracteriza a la dislalia funcional?", opts:["No se encuentra una causa física u orgánica evidente","Siempre existe sordera total","Solo aparece por ansiedad","Es pérdida total de voz"], correct:0, exp:"La funcional no presenta causa física u orgánica identificable."},
+{q:"¿Qué es el tartamudeo?", opts:["Una alteración de la fluidez del habla","Una alteración exclusiva de la audición","Una pérdida de memoria","Una enfermedad ocular"], correct:0, exp:"Puede incluir repeticiones, prolongaciones o bloqueos."},
+{q:"¿Qué describe mejor el mutismo?", opts:["Hablar demasiado rápido","Ausencia de lenguaje en un niño que antes hablaba","Confundir letras al escribir","Pronunciar una consonante de forma incorrecta"], correct:1, exp:"El material lo define como ausencia de lenguaje en quien anteriormente hablaba."},
+{q:"¿Qué es una conducta agresiva?", opts:["Toda conducta silenciosa","Una respuesta que puede causar daño físico o psicológico","Una actividad deportiva","Una emoción sin conducta"], correct:1, exp:"La agresividad puede expresarse física o verbalmente."},
+{q:"¿Cuál es un ejemplo de agresión verbal?", opts:["Dar una patada","Insultar","Empujar","Arañar"], correct:1, exp:"Insultos y amenazas son ejemplos verbales."},
+{q:"¿Qué significa heteroagresividad?", opts:["Agresión dirigida hacia otras personas u objetos","Agresión solo verbal","Daño dirigido hacia uno mismo","Ausencia total de conducta"], correct:0, exp:"\"Hetero\" indica que se dirige hacia otros."},
+{q:"¿Qué significa autoagresividad?", opts:["Agresión hacia uno mismo","Agresión solo contra objetos","Conducta social positiva","Imitación de lenguaje"], correct:0, exp:"La conducta se dirige al propio cuerpo."},
+{q:"¿Qué práctica ayuda a prevenir la agresividad?", opts:["Usar golpes como castigo","Reforzar conductas respetuosas","Cambiar las reglas todos los días","Ignorar siempre las emociones"], correct:1, exp:"El refuerzo positivo y límites consistentes favorecen conductas prosociales."},
+{q:"¿Qué puede favorecer la agresividad infantil?", opts:["Modelos familiares agresivos","Normas claras y constantes","Diálogo respetuoso","Reconocer emociones"], correct:0, exp:"Los modelos agresivos pueden ser aprendidos por observación."},
+{q:"¿Qué significa TEA?", opts:["Trastorno Específico de Audición","Trastorno del Espectro Autista","Técnica Educativa de Aprendizaje","Terapia Emocional Adaptativa"], correct:1, exp:"TEA corresponde a Trastorno del Espectro Autista."},
+{q:"¿Cuáles son los dos grandes grupos de características del TEA?", opts:["Dificultades sociales/comunicativas y patrones restringidos/repetitivos","Problemas de visión y de audición","Solo dificultades motoras","Solo conducta agresiva"], correct:0, exp:"Son los dos ejes centrales del diagnóstico."},
+{q:"¿Quién describió en 1943 un cuadro infantil diferenciado relacionado con el autismo?", opts:["Jean Piaget","Leo Kanner","Sigmund Freud","B. F. Skinner"], correct:1, exp:"Kanner describió un cuadro infantil diferenciado en 1943."},
+{q:"¿Cuál es una posible característica sensorial en el TEA?", opts:["Hiper o hiporreactividad a sonidos, luces o texturas","Visión perfecta en todos los casos","Ausencia de cualquier interés","Pérdida total del habla en todas las personas"], correct:0, exp:"La respuesta sensorial puede ser inusual y muy variable."},
+{q:"¿Qué afirmación sobre las vacunas y el autismo es correcta?", opts:["Las vacunas causan autismo","No existe evidencia científica que demuestre que las vacunas causen autismo","Solo algunas vacunas lo causan","Depende del mes de nacimiento"], correct:1, exp:"La relación causal entre vacunas y autismo es un mito."},
+{q:"¿Qué describe el nivel 3 de apoyo en TEA?", opts:["No requiere apoyo","Necesita ayuda muy notable","Solo necesita ayuda académica","No presenta interferencia funcional"], correct:1, exp:"Es el nivel de apoyo más intenso de los descritos."},
+{q:"¿Qué describe el nivel 1 de apoyo en TEA?", opts:["Necesita ayuda","No necesita ayuda","Necesita ayuda muy notable en todos los casos","Se refiere solo a problemas auditivos"], correct:0, exp:"El grado 1 se denomina \"necesita ayuda\"."},
+{q:"¿Cuándo suelen aparecer los signos del TEA?", opts:["Solo en la edad adulta","En la primera infancia, aunque pueden hacerse más visibles después","Únicamente en la adolescencia","Después de los 40 años"], correct:1, exp:"Los signos comienzan temprano."},
+{q:"¿Cuál es un objetivo principal del tratamiento y apoyo en TEA?", opts:["Eliminar la personalidad de la persona","Mejorar comunicación, autonomía, participación y calidad de vida","Evitar toda interacción social","Aplicar el mismo programa a todas las personas"], correct:1, exp:"Los apoyos deben individualizarse."},
+{q:"¿Qué acción es más adecuada ante una señal persistente de alteración del lenguaje o conducta?", opts:["Esperar indefinidamente","Buscar valoración profesional y apoyo temprano","Castigar al niño","Compararlo con sus compañeros"], correct:1, exp:"La identificación y apoyo tempranos favorecen mejores decisiones educativas y clínicas."}
+];
+
+const WORLDS = [
+  {name:"Fundamentos del Lenguaje", subtitle:"Las bases de cómo nos comunicamos", icon:"🗺️", color:"var(--w1)", from:0, to:3},
+  {name:"El Reino de la Voz", subtitle:"Disfonía, afonía y el cuidado vocal", icon:"🎤", color:"var(--w2)", from:3, to:7},
+  {name:"La Isla del Habla", subtitle:"Dislalia y tartamudeo", icon:"🗣️", color:"var(--w3)", from:7, to:14},
+  {name:"El Bosque de las Emociones", subtitle:"Conducta agresiva y su manejo", icon:"🌿", color:"var(--w4)", from:14, to:20},
+  {name:"La Galaxia del TEA", subtitle:"Trastorno del Espectro Autista", icon:"🪐", color:"var(--w5)", from:20, to:30},
+];
+
+/* ============ ESTADO ============ */
+let state = {
+  screen: "start",
+  qIndex: 0,
+  answers: [],       // { qIdx, chosen, correct }
+  locked: false,
+  streak: 0,
+  bestStreak: 0,
+};
+
+const app = document.getElementById("app");
+
+function worldOf(qIdx){
+  return WORLDS.find(w => qIdx >= w.from && qIdx < w.to);
+}
+function worldIndexOf(qIdx){
+  return WORLDS.findIndex(w => qIdx >= w.from && qIdx < w.to);
+}
+
+function render(){
+  app.innerHTML = "";
+  if (state.screen === "start") return renderStart();
+  if (state.screen === "worldIntro") return renderWorldIntro();
+  if (state.screen === "question") return renderQuestion();
+  if (state.screen === "worldDone") return renderWorldDone();
+  if (state.screen === "final") return renderFinal();
+}
+
+/* ---------- START ---------- */
+function renderStart(){
+  const s = document.createElement("div");
+  s.className = "screen center";
+  s.innerHTML = `
+    <div class="kicker">Repaso interactivo</div>
+    <h1 class="title">La Aventura del <span>Lenguaje</span></h1>
+    <p class="subtitle">Psicopatología del lenguaje, explicada en 5 mundos. Responde, aprende con la explicación al instante y sube de nivel.</p>
+    <div class="waves">${[26,44,64,38,52,30,58,42].map((h,i)=>`<div class="wave-bar" style="height:${h}px; animation-delay:${i*0.09}s"></div>`).join("")}</div>
+    <div class="worldlist">
+      ${WORLDS.map((w,i)=>`
+        <div class="worldrow">
+          <div class="worlddot" style="background:${w.color}"></div>
+          <div style="flex:1">
+            <b>${w.icon} ${w.name}</b>
+            <span>${w.subtitle} · ${w.to-w.from} preguntas</span>
+          </div>
+        </div>`).join("")}
+    </div>
+    <button class="big" id="startBtn">Comenzar aventura</button>
+    <div class="hint">30 preguntas en total · elige, aprende, avanza</div>
+  `;
+  app.appendChild(s);
+  document.getElementById("startBtn").onclick = () => {
+    state.qIndex = 0; state.answers = []; state.streak = 0; state.bestStreak = 0;
+    state.screen = "worldIntro"; render();
+  };
+}
+
+/* ---------- WORLD INTRO ---------- */
+function renderWorldIntro(){
+  const wi = worldIndexOf(state.qIndex);
+  const w = WORLDS[wi];
+  const s = document.createElement("div");
+  s.className = "screen center";
+  s.innerHTML = `
+    <div class="world-badge" style="background:${w.color}">${w.icon}</div>
+    <div class="world-num">Mundo ${wi+1} de ${WORLDS.length}</div>
+    <h2 class="world-title">${w.name}</h2>
+    <p class="world-desc">${w.subtitle}. Responderás ${w.to - w.from} preguntas de este bloque.</p>
+    <button class="big" id="goBtn" style="background:linear-gradient(135deg, ${w.color}, ${w.color}); box-shadow:0 8px 0 rgba(0,0,0,.25), 0 14px 24px rgba(0,0,0,.25); color:#20142a;">Entrar</button>
+  `;
+  app.appendChild(s);
+  document.getElementById("goBtn").onclick = () => { state.screen = "question"; state.locked = false; render(); };
+}
+
+/* ---------- QUESTION ---------- */
+function renderQuestion(){
+  const q = QUESTIONS[state.qIndex];
+  const w = worldOf(state.qIndex);
+  const wi = worldIndexOf(state.qIndex);
+  const posInWorld = state.qIndex - w.from + 1;
+  const totalInWorld = w.to - w.from;
+  const overallPct = Math.round(((state.qIndex) / QUESTIONS.length) * 100);
+
+  const s = document.createElement("div");
+  s.className = "screen";
+  s.innerHTML = `
+    <div class="topbar">
+      <div class="world-chip" style="background:${w.color}">${w.icon} ${w.name}</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:${overallPct}%"></div></div>
+      <div class="streak">🔥 ${state.streak}</div>
+    </div>
+    <div class="qcounter">Pregunta ${posInWorld} de ${totalInWorld} · ${w.name}</div>
+    <div class="qcard">
+      <div class="qtext">${q.q}</div>
+      <div class="options" id="opts">
+        ${q.opts.map((o,i)=>`
+          <button class="opt" data-i="${i}">
+            <span class="letter">${String.fromCharCode(65+i)}</span>
+            <span>${o}</span>
+          </button>`).join("")}
+      </div>
+      <div id="feedbackZone"></div>
+    </div>
+  `;
+  app.appendChild(s);
+
+  document.querySelectorAll(".opt").forEach(btn=>{
+    btn.onclick = () => selectAnswer(parseInt(btn.dataset.i));
+  });
+}
+
+function selectAnswer(choiceIdx){
+  if (state.locked) return;
+  state.locked = true;
+  const q = QUESTIONS[state.qIndex];
+  const isCorrect = choiceIdx === q.correct;
+  state.answers.push({ qIdx: state.qIndex, chosen: choiceIdx, correct: isCorrect });
+
+  if (isCorrect){ state.streak++; state.bestStreak = Math.max(state.bestStreak, state.streak); }
+  else { state.streak = 0; }
+
+  document.querySelectorAll(".opt").forEach(btn=>{
+    const i = parseInt(btn.dataset.i);
+    btn.classList.add("locked");
+    if (i === q.correct) btn.classList.add("correct");
+    else if (i === choiceIdx) btn.classList.add("wrong");
+    else btn.classList.add("dim");
+  });
+
+  const zone = document.getElementById("feedbackZone");
+  zone.innerHTML = `
+    <div class="feedback ${isCorrect ? "good" : "bad"}">
+      <b>${isCorrect ? "¡Correcto! 🎉" : "No exactamente."}</b> ${q.exp}
+    </div>
+    <button class="nextbtn" id="nextBtn">${state.qIndex === QUESTIONS.length - 1 ? "Ver resultados" : "Siguiente pregunta"}</button>
+  `;
+  document.getElementById("nextBtn").onclick = goNext;
+
+  if (isCorrect) burstConfettiSmall();
+}
+
+function goNext(){
+  const w = worldOf(state.qIndex);
+  const isLastOfWorld = state.qIndex + 1 === w.to;
+  const isLastOverall = state.qIndex + 1 === QUESTIONS.length;
+
+  state.qIndex++;
+
+  if (isLastOverall){ state.screen = "final"; }
+  else if (isLastOfWorld){ state.screen = "worldDone"; }
+  else { state.screen = "question"; state.locked = false; }
+  render();
+}
+
+/* ---------- WORLD DONE ---------- */
+function renderWorldDone(){
+  const finishedWorldIdx = worldIndexOf(state.qIndex - 1);
+  const w = WORLDS[finishedWorldIdx];
+  const worldAnswers = state.answers.filter(a => a.qIdx >= w.from && a.qIdx < w.to);
+  const correctCount = worldAnswers.filter(a=>a.correct).length;
+  const total = w.to - w.from;
+  const pct = Math.round((correctCount/total)*100);
+  const medal = pct === 100 ? "🏆" : pct >= 70 ? "🥇" : pct >= 50 ? "🥈" : "🥉";
+
+  const s = document.createElement("div");
+  s.className = "screen center";
+  s.innerHTML = `
+    <div class="medal">${medal}</div>
+    <div class="world-num">Mundo completado</div>
+    <h2 class="world-title">${w.name}</h2>
+    <div class="statgrid">
+      <div class="statbox"><div class="num">${correctCount}/${total}</div><div class="lab">Aciertos</div></div>
+      <div class="statbox"><div class="num">${pct}%</div><div class="lab">Precisión</div></div>
+    </div>
+    <button class="big" id="continueBtn">Continuar</button>
+  `;
+  app.appendChild(s);
+  document.getElementById("continueBtn").onclick = () => { state.screen = "worldIntro"; render(); };
+  burstConfetti(pct >= 70 ? 40 : 18, w.color);
+}
+
+/* ---------- FINAL ---------- */
+function renderFinal(){
+  const total = QUESTIONS.length;
+  const correct = state.answers.filter(a=>a.correct).length;
+  const pct = Math.round((correct/total)*100);
+
+  let rank, rankColor;
+  if (pct === 100){ rank = "Maestro/a de la Comunicación 🌟"; rankColor = "var(--w5)"; }
+  else if (pct >= 85){ rank = "Explorador/a Experto/a 🚀"; rankColor = "var(--w3)"; }
+  else if (pct >= 65){ rank = "Aventurero/a en Camino 🧭"; rankColor = "var(--w1)"; }
+  else { rank = "Recién Empezando el Viaje 🌱"; rankColor = "var(--w4)"; }
+
+  const worldStats = WORLDS.map(w=>{
+    const wa = state.answers.filter(a => a.qIdx >= w.from && a.qIdx < w.to);
+    const c = wa.filter(a=>a.correct).length;
+    const t = w.to - w.from;
+    return { name: w.name, color: w.color, pct: Math.round((c/t)*100), c, t };
+  });
+
+  const missed = state.answers.filter(a=>!a.correct).map(a=>a.qIdx);
+
+  const s = document.createElement("div");
+  s.className = "screen center";
+  s.innerHTML = `
+    <div class="trophy">${pct >= 85 ? "🏆" : pct >= 50 ? "🎖️" : "🧩"}</div>
+    <h1 class="title" style="font-size:1.9rem;">¡Aventura completada!</h1>
+    <div class="rank-badge" style="background:${rankColor}; color:#1c1730;">${rank}</div>
+    <div class="statgrid">
+      <div class="statbox"><div class="num">${correct}/${total}</div><div class="lab">Correctas</div></div>
+      <div class="statbox"><div class="num">${pct}%</div><div class="lab">Puntaje</div></div>
+      <div class="statbox"><div class="num">${state.bestStreak}</div><div class="lab">Mejor racha</div></div>
+    </div>
+    <div class="worldbars">
+      ${worldStats.map(w=>`
+        <div class="wbrow">
+          <div class="wblabel">${w.name}</div>
+          <div class="wbtrack"><div class="wbfill" style="width:${w.pct}%; background:${w.color}"></div></div>
+          <div class="wbnum">${w.c}/${w.t}</div>
+        </div>`).join("")}
+    </div>
+    <div class="btnrow">
+      ${missed.length > 0 ? `<button class="big" id="reviewBtn" style="font-size:15px; padding:13px 26px;">Repasar las ${missed.length} que fallé</button>` : ""}
+      <button class="secondary" id="restartBtn">Jugar de nuevo</button>
+    </div>
+  `;
+  app.appendChild(s);
+
+  if (missed.length > 0){
+    document.getElementById("reviewBtn").onclick = () => startReview(missed);
+  }
+  document.getElementById("restartBtn").onclick = () => { state.screen = "start"; render(); };
+
+  if (pct >= 70) burstConfetti(70, "var(--w2)");
+}
+
+/* ---------- REVISIÓN DE FALLADAS ---------- */
+function startReview(missedIdxs){
+  // Construimos una sesión temporal reutilizando el mismo motor,
+  // sobre un subconjunto de preguntas, sin tocar los datos originales.
+  window.__reviewQueue = missedIdxs.slice();
+  reviewNext();
+}
+function reviewNext(){
+  if (!window.__reviewQueue || window.__reviewQueue.length === 0){
+    state.screen = "final"; render(); return;
+  }
+  const qIdx = window.__reviewQueue.shift();
+  renderReviewQuestion(qIdx);
+}
+function renderReviewQuestion(qIdx){
+  const q = QUESTIONS[qIdx];
+  const w = worldOf(qIdx);
+  app.innerHTML = "";
+  const s = document.createElement("div");
+  s.className = "screen";
+  s.innerHTML = `
+    <div class="topbar">
+      <div class="world-chip" style="background:${w.color}">${w.icon} Repaso</div>
+      <div class="progress-wrap"><div class="progress-bar" style="width:100%; background:${w.color}"></div></div>
+    </div>
+    <div class="qcounter">Repasando · ${w.name}</div>
+    <div class="qcard">
+      <div class="qtext">${q.q}</div>
+      <div class="options" id="opts">
+        ${q.opts.map((o,i)=>`
+          <button class="opt" data-i="${i}">
+            <span class="letter">${String.fromCharCode(65+i)}</span>
+            <span>${o}</span>
+          </button>`).join("")}
+      </div>
+      <div id="feedbackZone"></div>
+    </div>
+  `;
+  app.appendChild(s);
+  document.querySelectorAll(".opt").forEach(btn=>{
+    btn.onclick = () => {
+      const choiceIdx = parseInt(btn.dataset.i);
+      const isCorrect = choiceIdx === q.correct;
+      document.querySelectorAll(".opt").forEach(b=>{
+        const i = parseInt(b.dataset.i);
+        b.classList.add("locked");
+        if (i === q.correct) b.classList.add("correct");
+        else if (i === choiceIdx) b.classList.add("wrong");
+        else b.classList.add("dim");
+      });
+      const zone = document.getElementById("feedbackZone");
+      zone.innerHTML = `
+        <div class="feedback ${isCorrect ? "good" : "bad"}"><b>${isCorrect ? "¡Ahora sí! 🎉" : "Vamos de nuevo:"}</b> ${q.exp}</div>
+        <button class="nextbtn" id="nextBtn">${window.__reviewQueue.length ? "Siguiente" : "Terminar repaso"}</button>
+      `;
+      document.getElementById("nextBtn").onclick = reviewNext;
+      if (isCorrect) burstConfettiSmall();
+    };
+  });
+}
+
+/* ---------- CONFETI ---------- */
+function burstConfetti(n, color){
+  const colors = color ? [color] : ["var(--w1)","var(--w2)","var(--w3)","var(--w4)","var(--w5)"];
+  for (let i=0;i<n;i++){
+    const p = document.createElement("div");
+    p.className = "confetti-piece";
+    p.style.left = Math.random()*100 + "vw";
+    p.style.background = colors[Math.floor(Math.random()*colors.length)];
+    p.style.animationDuration = (2 + Math.random()*1.5) + "s";
+    p.style.borderRadius = Math.random() > 0.5 ? "50%" : "3px";
+    document.body.appendChild(p);
+    setTimeout(()=>p.remove(), 3800);
+  }
+}
+function burstConfettiSmall(){ burstConfetti(10); }
+
+/* ---------- ESTRELLAS DE FONDO ---------- */
+function initStars(){
+  const el = document.getElementById("stars");
+  for (let i=0;i<60;i++){
+    const st = document.createElement("div");
+    st.className = "star";
+    st.style.left = Math.random()*100 + "vw";
+    st.style.top = Math.random()*100 + "vh";
+    st.style.animationDelay = (Math.random()*3) + "s";
+    el.appendChild(st);
+  }
+}
+
+initStars();
+render();
+</script>
+</body>
+</html>
